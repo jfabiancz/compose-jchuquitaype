@@ -1,0 +1,42 @@
+## Autor Jorge Fabian Chuquitaype Zuniga
+version: '3'
+services:
+ frontendapp:
+   build: ./frontend
+   container_name: myweb
+   restart: always
+   expose:
+     - "8000"
+   volumes:
+     - ./frontend:/home/flask/app/web
+   depends_on:
+     - backendapp
+   links:
+     - backendapp
+   environment:
+     FLASK_DEBUG: 1
+   deploy:
+     mode: replicated
+     replicas: 3
+ nginx:
+   build: nginx/
+   container_name: mynginx
+   restart: always
+   ports:
+     - "80:80"
+   deploy:
+     mode: replicated
+     replicas: 3
+   depends_on:
+     - frontendapp
+ backendapp:
+   container_name: mydb
+   restart: always
+   image: postgres:alpine
+   volumes:
+     - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+   environment:
+     POSTGRES_PASSWORD: 123456
+     POSTGRES_DB: postgres
+   expose:
+     - "5432"
